@@ -102,7 +102,7 @@ def main():
 
     # Initialize driver
     driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
-    driver.get("https://www.youtube.com/watch?v=BOPQnPWF728&t=976s")
+    driver.get("https://www.youtube.com/watch?v=QtgO9wUgj9E")
     driver.implicitly_wait(3)
 
     # 전처리 실행

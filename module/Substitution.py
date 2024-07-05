@@ -2,12 +2,19 @@ import pandas as pd
 from konlpy.tag import Okt
 import re
 
-# 정규 표현식 함수 정의 (숫자 없애기)
 def apply_regular_expression(text):
-    hangul = re.compile('[^ ㄱ-ㅣ가-힣a-zA-Z ]')  # 숫자 제거
-    result = hangul.sub('', text)
-    return result
-
+    try:
+        hangul = re.compile('[^ ㄱ-ㅣ가-힣a-zA-Z ]')  # 숫자 제거
+        result = hangul.sub('', text)
+        return result
+    except TypeError:
+        # 입력이 None 등으로 들어온 경우 처리
+        return text
+    except Exception as e:
+        # 기타 예외 발생 시 처리
+        print(f"Error applying regular expression: {e}")
+        return None
+    
 # 엑셀 파일 읽기
 file_path = '../xlsx/crawling_manu.xlsx'
 df = pd.read_excel(file_path, engine='openpyxl')
@@ -45,24 +52,25 @@ def replace_words(morphs, replacement_dict):
 
 # 두 번째 컬럼의 각 문장에 대해 형태소 분석 수행 및 문장 변환
 def analyze_and_replace(sentence):
-    morphs = okt.morphs(sentence, stem=True, norm=True)
-    replaced_morphs = replace_words(morphs, replace_dict)
-    return ' '.join(replaced_morphs)
+    #morphs = okt.morphs(sentence, stem=True, norm=True)
+    #replaced_morphs = replace_words(morphs, replace_dict)
+    #return ' '.join(replaced_morphs)
+    return sentence
 
 # 1번 열(댓글 문장)에 대해 전처리 및 형태소 분석 수행
 preprocessed_sentences = [analyze_and_replace(sentence) for sentence in second_column]
 
 # 한 글자 키워드 제거 및 deleted 추가
-preprocessed_sentences_filtered = []
-for sentence in preprocessed_sentences:
-    filtered_sentence = ' '.join([word for word in sentence.split() if len(word) > 1])
-    if not filtered_sentence.strip():  # 남은 문장이 없으면
-        filtered_sentence = 'none'
-    preprocessed_sentences_filtered.append(filtered_sentence)
+#preprocessed_sentences_filtered = []
+#for sentence in preprocessed_sentences:
+#    filtered_sentence = ' '.join([word for word in sentence.split() if len(word) > 1])
+#    if not filtered_sentence.strip():  # 남은 문장이 없으면
+#        filtered_sentence = 'none'
+#    preprocessed_sentences_filtered.append(filtered_sentence)
 
 # 전처리된 댓글 문장을 데이터프레임으로 변환
 preprocessed_df = pd.DataFrame({
-    'Processed_Comments': preprocessed_sentences_filtered
+    'Processed_Comments': preprocessed_sentences
 })
 
 # 전처리된 결과를 Excel 파일로 저장
