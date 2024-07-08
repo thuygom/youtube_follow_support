@@ -1,6 +1,6 @@
-##유튜브 인플루언서 스탯 분석 및 댓글 감정 분석을 통한 충성도 검출 추가적인 멀티모달리티 유틸리티 기능 제공
+**유튜브 인플루언서 스탯 분석 및 댓글 감정 분석을 통한 충성도 검출 추가적인 멀티모달리티 유틸리티 기능 제공**
 
-#### 1. Project 설명
+**1. Project 설명**
 
 - 데이터 마이닝 강의에서 배운 데이터 마이닝 기법을 통해 소셜 미디어(유튜브)에서 데이터를 추출하고(**구글 youtubve API version3를 사용한 웹 크롤링**) **영상 댓글을 평가하여 우호적인 댓글과 비우호적 댓글을 점수를 매기는 알고리즘을 AI 모델링**(KoBert Model 파인 튜닝)을 통해 개발한다. 이는 직접 AI를 모델링하거나 만들어진 AI 모델을 가져와(openAi API 등) 우리가 사용할 목적에 맞게 **AI 파인튜닝하고** 적절히 사용할 수 있다. 
 - 댓글 감정 분석 모델 및 댓글의 주체(Object)를 판별해 영상에 대해 Negative한지, Positive한지 분류하고, 유튜버에 공감하는지 등을 분류하고 **Follow Support(충성도)**를 도출해내고, 해당 유튜버의 모든 영상에 대해  다양한 Stat들을 도출해 해당 유튜버의 팔로워 지지율까지 도출해낸다. 
@@ -33,6 +33,8 @@
       like_list = soup.select("span#vote-count-middle")
       #CSS Selector로 원하는 정보를 선택해 가져오는 로직 코드
   ```
+![image](https://github.com/thuygom/youtube_follow_support/assets/138266353/627c9f1b-670a-4614-82fa-82746c2e34ff)
+![image](https://github.com/thuygom/youtube_follow_support/assets/138266353/c424a008-e3a4-46ab-b588-c33065427727)
 
 Selenium과 BeautifulSoup4 라이브러리를 사용해 웹페이지의 Object와 상호작용할 수 있으며 전체 html코드를 가져온 후, CSS Selector를 통해 필요한 데이터들을 수집할 수 있는 모듈.
 
@@ -131,6 +133,7 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   output_file_path = '../xlsx/result_tfidf.xlsx'
   save_tfidf_to_excel(preprocessed_sentences, output_file_path)
   ```
+![image](https://github.com/thuygom/youtube_follow_support/assets/138266353/e151f6dc-80e5-4e8f-948e-11051adba2b6)
 
 | Main Developer | 이연준 |
 | :------------: | :----: |
@@ -190,6 +193,8 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   ```
 
   openAi의 경우 Prompt를 생성하여, openAi 사이트에서 jsonl형식의 DataSet을 기반으로 파인튜닝 했으며, Accuracy 87퍼센트 정도를 보여준다. 응답 품질을 향상시키기 위해서 데이터 셋에 걸맞게 프롬프트 튜닝을 하였고, 추가적으로 프롬프트 앙상블링(여러개의 prompt로 모델의 응답을 생성한 후, 이를 종합하여 최종응답을 도출하는 방법)으로 정답의 품질을 향상시켰다. 밑에 예시 사진으로는 오킹이라는 유튜버에 사과영상의 댓글을 분석한 것인데, 댓글을 기반으로 누구에 대해 감정을 느끼고, 그대상이 누구인지에 대해서 분석한 결과를 반환한다.
+
+![image](https://github.com/thuygom/youtube_follow_support/assets/138266353/81e94100-55d8-47aa-bc2f-ca53b27a52c8)
 
   [koBert model]
 
@@ -273,9 +278,28 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   ```
 
   koBert모델의 경우 koBert모델을 가져온 후, 하이퍼 파라미터를 설정하고, 학습을 진행한후, 학습이 진행된 모델을 저장 후, 다른 코드에서 불러와서 학습된 모델을 기반으로 평가를 진행할 수 있다.
-  
+
+  ![epoch5](https://github.com/thuygom/youtube_follow_support/assets/138266353/2e7d7016-3f51-462d-9e63-b325c014a1cf)
+
+  ![koBert](https://github.com/thuygom/youtube_follow_support/assets/138266353/8e20dcd9-bdde-4f93-aa60-85263ba92f39)
+
   | Main Developer | 김정훈 |
   | :------------: | :----: |
+
   
-  
+
+**3. 개발 레퍼런스**
+
+https://htrend-4d67e.web.app/
+
+https://kr.noxinfluencer.com/
+
+
+
+**팀 기여도**
+
+| 김정훈 |  6   |
+| :----: | :--: |
+| 노태원 |  2   |
+| 이연준 |  2   |
 
