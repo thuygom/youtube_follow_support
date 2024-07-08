@@ -132,8 +132,8 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   save_tfidf_to_excel(preprocessed_sentences, output_file_path)
   ```
 
-| Developer | 이연준 |
-| :-------: | :----: |
+| Main Developer | 이연준 |
+| :------------: | :----: |
 
 - 감정 분석 및 감정 대상 분석 AI Model
 
@@ -273,4 +273,9 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   ```
 
   koBert모델의 경우 koBert모델을 가져온 후, 하이퍼 파라미터를 설정하고, 학습을 진행한후, 학습이 진행된 모델을 저장 후, 다른 코드에서 불러와서 학습된 모델을 기반으로 평가를 진행할 수 있다.
+  
+  | Main Developer | 김정훈 |
+  | :------------: | :----: |
+  
+  
 
