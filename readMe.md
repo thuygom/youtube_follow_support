@@ -286,7 +286,95 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   | Main Developer | 김정훈 |
   | :------------: | :----: |
 
+- SQL DB연동
+
+  파이썬에서 MySql DB로 유튜버의 스탯과 댓글들을 연동시켰다.
+
+  ```python
+  # 데이터프레임의 각 행을 Youtuber 테이블에 삽입
+  for index, row in df.iterrows():
+      insert_query = """
+      INSERT INTO VideoStat (video_id, upload_date, date, view_count, like_count, comment_count, subscriber_count, channel_id, channel_title, channel_description, topic_categories, title, description, tags, thumbnails)
+      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+      """
+      data = (
+          row['video_id'] if pd.notnull(row['video_id']) else None,
+          row['upload_date'] if pd.notnull(row['upload_date']) else None,
+          row['date'] if pd.notnull(row['date']) else None,
+          row['view_count'] if pd.notnull(row['view_count']) else None,
+          row['like_count'] if pd.notnull(row['like_count']) else None,
+          row['comment_count'] if pd.notnull(row['comment_count']) else None,
+          row['subscriber_count'] if pd.notnull(row['subscriber_count']) else None,
+          row['channel_id'] if pd.notnull(row['channel_id']) else None,
+          row['channel_title'] if pd.notnull(row['channel_title']) else None,
+          row['channel_description'] if pd.notnull(row['channel_description']) else None,
+          row['topic_categories'] if pd.notnull(row['topic_categories']) else None,
+          row['title'] if pd.notnull(row['title']) else None,
+          row['description'] if pd.notnull(row['description']) else None,
+          row['tags'] if pd.notnull(row['tags']) else None,
+          row['thumbnails'] if pd.notnull(row['thumbnails']) else None
+      )
+      cursor.execute(insert_query, data)
   
+  for index, row in df2.iterrows():
+          insert_query = """
+          INSERT INTO Comments (comment, author, date, num_likes, video_id)
+          VALUES (%s, %s, %s, %s, %s)
+          """
+          data = (
+              row['comment'],
+              row['author'],
+              row['date'],
+              row['num_likes'],
+              row['video_id']
+          )
+          cursor.execute(insert_query, data)
+  ```
+
+  이렇게 python에서 DB쪽으로 업로드 해주면 다음 사진과 같이 DB에 올라간다.
+
+  사진
+
+  사진
+
+  | Main Developer | 김정훈 |
+  | :------------: | :----: |
+  | Sub Developer  | 이연준 |
+
+  
+
+- 자동 로그 수집 모듈
+
+  원하는 유튜버들의 영상에 대해 일자별로 로그를 수집할 수 있도록 기존 웹크롤링을 모듈화 시켜 자동로그 수집 되도록 만들었다.
+
+  ```python
+  VIDEO_Oking = ['oakQvwCbvr8', '-HZeqsIgGHo', 'nAy-7zuCVQs', 'QojVuirFx58', 'ibI5OOZXSj8']
+  VIDEO_STYLE = ['g5KDoSqT24Q', 'mnn1_yu0aDQ', 'pp_C0MGj9ZM', '_Otk-iMD_X0', '_HZ63R-8z4E']
+  VIDEO_GAME = ['yLlKOd3I8CA', 'BYWO-z-4tfo', 'uNq7RMRwIHs', 'ZLXz98YW_U0', 'qkXc1M3d7g4']
+  VIDEO_MUSIC = ['-rHqqCxjhM4', 'FGjrtBFgTXY', 'TOSrdHy5KRc', 'wdUu3XQK8cE', 'LamRCcz4zqg']
+  VIDEO_ISSUE = ['ahcPfSLbT-M', '8l4GZ4datyM', '7I790Er-zkc', '8SJs1Cg7hpU', 'VWmWScovllY']
+  
+  # File paths
+  STATS_FILE_PATH = '../xlsx/stats0709.xlsx'
+  COMMENTS_FILE_PATH = '../xlsx/crawling_auto0709.xlsx'
+  
+  extract(VIDEO_Oking,STATS_FILE_PATH, COMMENTS_FILE_PATH)
+  
+  extract(VIDEO_STYLE,STATS_FILE_PATH, COMMENTS_FILE_PATH)
+  
+  extract(VIDEO_GAME,STATS_FILE_PATH, COMMENTS_FILE_PATH)
+  
+  extract(VIDEO_MUSIC,STATS_FILE_PATH, COMMENTS_FILE_PATH)
+  
+  extract(VIDEO_ISSUE,STATS_FILE_PATH, COMMENTS_FILE_PATH)
+  ```
+
+  | Main Developer | 김정훈 |
+  | :------------: | :----: |
+
+  
+
+
 
 **3. 개발 레퍼런스**
 
