@@ -1,75 +1,138 @@
 import pandas as pd
 from googleapiclient.discovery import build
-import warnings  # 경고창 무시
+import warnings
 from datetime import datetime
 
+# Suppress warnings
 warnings.filterwarnings('ignore')
 
-myKey = 'AIzaSyDW3zH1Dl-NcrvNrdQn7CsCDcBE41o24QM'
-myVideo = '2FH0VaqQc84'
+# API key and video ID
+API_KEY = 'AIzaSyDW3zH1Dl-NcrvNrdQn7CsCDcBE41o24QM'
+VIDEO_ID = '6jjrOl2EmeQ'
 
-# API 객체 초기화
-api_obj = build('youtube', 'v3', developerKey=myKey)
+# File paths
+STATS_FILE_PATH = '../xlsx/stats.xlsx'
+COMMENTS_FILE_PATH = '../xlsx/crawling_auto.xlsx'
 
-# 동영상 통계 정보를 가져오는 함수
-def get_video_statistics(video_id):
+# Initialize YouTube API object
+def initialize_api(api_key):
+    return build('youtube', 'v3', developerKey=api_key)
+
+# Function to get video statistics
+def get_video_info(api_obj, video_id):
     response = api_obj.videos().list(
-        part='statistics',
+        part='snippet,statistics,topicDetails',
         id=video_id
     ).execute()
-    stats = response['items'][0]['statistics']
-    return stats
+    video_info = response['items'][0]
+    snippet = video_info['snippet']
+    statistics = video_info['statistics']
+    topic_details = video_info.get('topicDetails', {})  # Handle cases where topicDetails might not exist
+    return snippet, statistics, topic_details
 
-# 동영상 통계 정보 가져오기
-statistics = get_video_statistics(myVideo)
-current_date = datetime.now().strftime('%Y-%m-%d')
+# Function to save statistics to Excel
+def save_statistics_to_excel(stats_df, file_path):
+    try:
+        existing_stats_df = pd.read_excel(file_path)
+        stats_df = pd.concat([existing_stats_df, stats_df], ignore_index=True)
+    except FileNotFoundError:
+        pass
+    stats_df.to_excel(file_path, index=False)
+    print(f"통계 정보를 {file_path}에 저장했습니다.")
 
-# 모든 통계 정보를 DataFrame으로 저장
-stats_data = {
-    'date': [current_date],
-    'view_count': [statistics.get('viewCount')],
-    'like_count': [statistics.get('likeCount')],
-    'dislike_count': [statistics.get('dislikeCount')],
-    'comment_count': [statistics.get('commentCount')]
-}
+# Function to extract comments
+def extract_video_comments(api_obj, video_id):
+    comments = []
+    response = api_obj.commentThreads().list(
+        part='snippet,replies',
+        videoId=video_id,
+        maxResults=100  # Increased maxResults for more comments
+    ).execute()
+    
+    while response:
+        for item in response['items']:
+            comment = item['snippet']['topLevelComment']['snippet']
+            comments.append([comment['textDisplay'], comment['authorDisplayName'], comment['publishedAt'], comment['likeCount']])
+    
+            if item['snippet']['totalReplyCount'] > 0:
+                for reply_item in item['replies']['comments']:
+                    reply = reply_item['snippet']
+                    comments.append([reply['textDisplay'], reply['authorDisplayName'], reply['publishedAt'], reply['likeCount']])
+    
+        if 'nextPageToken' in response:
+            response = api_obj.commentThreads().list(
+                part='snippet,replies',
+                videoId=video_id,
+                pageToken=response['nextPageToken'],
+                maxResults=100
+            ).execute()
+        else:
+            break
+    
+    return pd.DataFrame(comments, columns=['comment', 'author', 'date', 'num_likes'])
 
-stats_df = pd.DataFrame(stats_data)
+# Function to save comments to Excel
+def save_comments_to_excel(comments_df, file_path):
+    comments_df.to_excel(file_path, header=['comment', 'author', 'date', 'num_likes'], index=None)
+    print(f"댓글을 {file_path}에 저장했습니다.")
 
-# 기존 통계 데이터 로드 (파일이 있을 경우)
-try:
-    existing_stats_df = pd.read_excel('../xlsx/stats.xlsx')
-    stats_df = pd.concat([existing_stats_df, stats_df], ignore_index=True)
-except FileNotFoundError:
-    pass
+# Function to get channel information
+def get_channel_info(api_obj, channel_id):
+    response = api_obj.channels().list(
+        part='snippet,statistics',
+        id=channel_id
+    ).execute()
+    channel_info = response['items'][0]
+    snippet = channel_info['snippet']
+    statistics = channel_info['statistics']
+    return snippet, statistics
 
-# 업데이트된 통계 데이터 저장
-stats_df.to_excel('../xlsx/stats.xlsx', index=False)
-print("통계 정보 추출 완료")
+def main():
+    # Initialize API
+    api_obj = initialize_api(API_KEY)
+    
+    # Get video info
+    snippet, statistics, topic_details = get_video_info(api_obj, VIDEO_ID)
+    
+    # Extract relevant information
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    upload_date = snippet['publishedAt']
+    channel_id = snippet['channelId']  # Get channel ID
+    
+    # Get channel info for channel title and description
+    channel_snippet, channel_statistics = get_channel_info(api_obj, channel_id)
+    channel_title = channel_snippet['title']
+    channel_description = channel_snippet['description']
+    subscriber_count = channel_statistics.get('subscriberCount', 0)
+    
+    # Create DataFrame for statistics
+    stats_data = {
+        'video_id': VIDEO_ID,
+        'upload_date': [upload_date],
+        'date': [current_date],
+        'view_count': [statistics.get('viewCount')],
+        'like_count': [statistics.get('likeCount')],
+        'comment_count': [statistics.get('commentCount')],
+        'subscriber_count': [subscriber_count],
+        'channel_id': [channel_id],
+        'channel_title': [channel_title],
+        'channel_description': [channel_description],
+        'topic_categories': [', '.join(topic_details.get('topicCategories', []))],
+        'title': [snippet['title']],
+        'description': [snippet['description']],
+        'tags': [', '.join(snippet.get('tags', []))],
+        'thumbnails': [snippet['thumbnails']['default']['url']]  # Adjust the key as per your requirement
+    }
+    stats_df = pd.DataFrame(stats_data)
+    
+    # Save statistics to Excel
+    save_statistics_to_excel(stats_df, STATS_FILE_PATH)
+    
+    # Extract comments
+    comments_df = extract_video_comments(api_obj, VIDEO_ID)
+    
+    # Save comments to Excel
+    save_comments_to_excel(comments_df, COMMENTS_FILE_PATH)
 
-# 댓글 추출
-#comments = list()  # 댓글 리스트
-
-#response = api_obj.commentThreads().list(
-#    part='snippet,replies',
-#    videoId=myVideo,
-#    maxResults=5
-#).execute()
-
-#while response:
-#    for item in response['items']:
-#        comment = item['snippet']['topLevelComment']['snippet']
-#        comments.append([comment['textDisplay'], comment['authorDisplayName'], comment['publishedAt'], comment['likeCount']])
-#
-#        if item['snippet']['totalReplyCount'] > 0:
-#            for reply_item in item['replies']['comments']:
-#                reply = reply_item['snippet']
-#                comments.append([reply['textDisplay'], reply['authorDisplayName'], reply['publishedAt'], reply['likeCount']])
-#
-#    if 'nextPageToken' in response:
-#        response = api_obj.commentThreads().list(part='snippet,replies', videoId=myVideo, pageToken=response['nextPageToken'], maxResults=100).execute()
-#    else:
-#        break
-#
-#df = pd.DataFrame(comments)
-#df.to_excel('../xlsx/crawling_auto.xlsx', header=['comment', 'author', 'date', 'num_likes'], index=None)
-#print("댓글 추출 완료")
+if __name__ == "__main__":
+    main()

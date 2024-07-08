@@ -10,6 +10,8 @@ import pandas as pd
 import warnings
 import re
 
+id = "QtgO9wUgj9E"
+
 # 전처리 함수
 def preprocess(driver):
     print("Preprocessing Start")
@@ -102,7 +104,7 @@ def main():
 
     # Initialize driver
     driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
-    driver.get("https://www.youtube.com/watch?v=QtgO9wUgj9E")
+    driver.get("https://www.youtube.com/watch?v=" + id)
     driver.implicitly_wait(3)
 
     # 전처리 실행
