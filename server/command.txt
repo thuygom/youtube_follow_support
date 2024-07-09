@@ -1,0 +1,3 @@
+cd followSupport
+python manage.py runserver
+python manage.py startapp followSupportTest
