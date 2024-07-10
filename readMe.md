@@ -196,6 +196,8 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
 
 ![image](https://github.com/thuygom/youtube_follow_support/assets/138266353/81e94100-55d8-47aa-bc2f-ca53b27a52c8)
 
+![image](https://github.com/thuygom/youtube_follow_support/assets/138266353/dbac2972-bb05-4d4e-9c8e-3db8f7d9c126)
+
   [koBert model]
 
   ```python
@@ -283,6 +285,8 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
 
   ![koBert](https://github.com/thuygom/youtube_follow_support/assets/138266353/8e20dcd9-bdde-4f93-aa60-85263ba92f39)
 
+  ![openAI](https://github.com/thuygom/youtube_follow_support/assets/138266353/87f59c4e-396e-461d-8647-fcf33841eb60)
+
   | Main Developer | 김정훈 |
   | :------------: | :----: |
 
@@ -333,9 +337,9 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
 
   이렇게 python에서 DB쪽으로 업로드 해주면 다음 사진과 같이 DB에 올라간다.
 
-  사진
+  ![youtuber_stat](https://github.com/thuygom/youtube_follow_support/assets/138266353/b0c7e030-9341-41ab-a952-f55da65cf816)
 
-  사진
+  ![comment_db](https://github.com/thuygom/youtube_follow_support/assets/138266353/0876b3b7-620e-4f5b-bef7-2ffff023c614)
 
   | Main Developer | 김정훈 |
   | :------------: | :----: |
@@ -372,9 +376,64 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   | Main Developer | 김정훈 |
   | :------------: | :----: |
 
+
+- Mysql 과 Django Server 연동 및 웹퍼블리싱
+
+  ```python
+  # followSupportTest/models.py
   
+  from django.db import models
+  
+  class VideoStat(models.Model):
+      video_num = models.IntegerField(primary_key=True)
+      video_id = models.CharField(max_length=50)
+      upload_date = models.DateTimeField()
+      date = models.DateField()
+      view_count = models.IntegerField()
+      like_count = models.IntegerField()
+      comment_count = models.IntegerField()
+      subscriber_count = models.IntegerField()
+      channel_id = models.CharField(max_length=50)
+      channel_title = models.CharField(max_length=100)
+      channel_description = models.TextField(null=True)
+      topic_categories = models.TextField(null=True)
+      title = models.CharField(max_length=200, null=True)
+      description = models.TextField(null=True)
+      tags = models.TextField(null=True)
+      thumbnails = models.CharField(max_length=255)
+  
+      class Meta:
+          managed = False
+          db_table = 'VideoStat'
+  
+      def __str__(self):
+          return self.video_id
+  
+  class Comment(models.Model):
+      comment_id = models.IntegerField(primary_key=True)
+      comment = models.TextField()
+      author = models.CharField(max_length=100)
+      date = models.DateTimeField()
+      num_likes = models.IntegerField()
+      video_id = models.CharField(max_length=100)
+      emotion = models.CharField(max_length=100)
+      object = models.CharField(max_length=100)
+  
+      class Meta:
+          managed = False
+          db_table = 'Comments'
+  
+      def __str__(self):
+          return self.comment
+  ```
 
+  파이썬 Django Server에서 DB스키마를 생성하고, Managed를 false로 설정하므로서, 새로이 마이그레이션 하지않고 기존 Mysql DB 에서 데이터를 가져오도록 설정되었다. 이제 서버를 키고 localhost로 접속해보면
 
+  사진
+
+  사진
+
+  위처럼 유튜버들의 스탯과 댓글들을 확인할 수 있다.
 
 **3. 개발 레퍼런스**
 
