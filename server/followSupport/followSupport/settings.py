@@ -76,8 +76,12 @@ WSGI_APPLICATION = "followSupport.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'followSupport',  # MySQL 데이터베이스 이름
+        'USER': 'root',  # MySQL 사용자 이름
+        'PASSWORD': '1234',  # MySQL 사용자 비밀번호
+        'HOST': 'localhost',  # 보통 'localhost' 또는 MySQL 서버 IP
+        'PORT': '3306',  # 기본적으로 3306
     }
 }
 
