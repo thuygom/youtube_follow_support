@@ -435,6 +435,108 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
 
   위처럼 유튜버들의 스탯과 댓글들을 확인할 수 있다.
 
+- google trend API를 활용한 일자별 관심도 시각화 및 연관 검색어 추출
+
+  [google_trend_api.py]
+
+  ```python
+  import time
+  from pytrends.request import TrendReq
+  import matplotlib.pyplot as plt
+  from matplotlib import font_manager, rc
+  import pandas as pd
+  
+  # 한글 폰트 설정 (Windows에서 기본 폰트 사용)
+  font_path = 'C:/Windows/Fonts/malgun.ttf'  # Windows 기본 폰트 경로 설정
+  
+  # 폰트 설정
+  font_name = font_manager.FontProperties(fname=font_path).get_name()
+  rc('font', family=font_name)
+  
+  # pytrends 세션 시작
+  pytrends = TrendReq(hl='ko', tz=360)  # 'hl'을 'ko'로 설정하여 한글 결과 받기
+  
+  # 유튜버 키워드 리스트
+  keywords = ["오킹", "한동숙", "뻑가", "깡 스타일리스트", "때잉 플레이리스트"]
+  
+  # 3개월 전 데이터를 가져오기 위해 시간 범위 설정
+  timeframe = 'today 3-m'
+  
+  # pytrends로 데이터 요청
+  pytrends.build_payload(keywords, cat=0, timeframe=timeframe, geo='', gprop='')
+  time.sleep(60)  # 요청 후 대기
+  
+  # 관심도 데이터 가져오기
+  interest_over_time_df = pytrends.interest_over_time()
+  
+  # 데이터프레임을 Excel 파일로 저장
+  interest_over_time_df.to_excel('trend_interest.xlsx', index=True)
+  
+  # 데이터 시각화
+  plt.figure(figsize=(14, 8))
+  
+  for keyword in keywords:
+      plt.plot(interest_over_time_df.index, interest_over_time_df[keyword], label=keyword)
+  
+  plt.title('유튜버 관심도 (3개월 전 데이터)', fontsize=15)
+  plt.xlabel('날짜', fontsize=12)
+  plt.ylabel('관심도', fontsize=12)
+  plt.legend(title='유튜버', fontsize=10)
+  plt.xticks(rotation=45)
+  plt.grid(True)
+  plt.show()
+  ```
+
+  ![img](file:///C:/Users/repli/AppData/Roaming/PolarisOffice/Favorite/19072_15138120/poclip1/04/image1.png)
+
+  ![img](file:///C:/Users/repli/AppData/Roaming/PolarisOffice/Favorite/19072_15138120/poclip1/04/image3.png)
+
+   
+
+  이처럼 구글 트렌드 api를 통해 일자별 유튜버에 대한 관심도를 얻을 수 있었다. 추가적으로 이 데이터들을 웹 페이지에 띄워주어서 사용자들에게 제공하려고 한다.
+
+   
+
+  [ Google_related.py ]
+
+  ```python
+  import time
+  from pytrends.request import TrendReq
+  import pandas as pd
+  
+  # pytrends 세션 시작
+  pytrends = TrendReq(hl='ko', tz=360)
+  
+  # 유튜버 키워드 리스트
+  keywords = ["오킹", "한동숙", "뻑가", "깡 스타일리스트", "때잉 플레이리스트"]
+  
+  # 연관 검색어를 저장할 데이터프레임 초기화
+  related_queries_df = pd.DataFrame(columns=['유튜버', '연관 검색어'])
+  
+  # 각 유튜버 키워드에 대해 연관 검색어 가져오기
+  for keyword in keywords:
+      time.sleep(600)  # 요청 간 대기
+      pytrends.build_payload([keyword], cat=0, timeframe='today 3-m', geo='', gprop='')
+      related_queries = pytrends.related_queries()[keyword]['top']
+      
+      if related_queries is not None:
+          # 각 연관 검색어를 데이터프레임에 추가
+          for _, row in related_queries.iterrows():
+              new_row = pd.DataFrame({'유튜버': [keyword], '연관 검색어': [row['query']]})
+              related_queries_df = pd.concat([related_queries_df, new_row], ignore_index=True)
+      print(related_queries)
+  
+  # 데이터프레임을 Excel 파일로 저장
+  related_queries_df.to_excel('related_queries.xlsx', index=False)
+  
+  print("연관 검색어가 'related_queries.xlsx'로 저장되었습니다.")
+  
+  ```
+
+  ![img](file:///C:/Users/repli/AppData/Roaming/PolarisOffice/Favorite/19072_15138120/poclip1/04/image5.png)
+
+  이처럼 연관검색어를 얻고 이를 웹페이지에 부가적인 정보로 알려주며, 추가적인 연관검색어 분석을 통해 positive와 negative를 얻을 수 있다.
+
 **3. 개발 레퍼런스**
 
 https://htrend-4d67e.web.app/
