@@ -487,11 +487,9 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   plt.show()
   ```
 
-  ![img](file:///C:/Users/repli/AppData/Roaming/PolarisOffice/Favorite/19072_15138120/poclip1/04/image1.png)
+  ![interst](https://github.com/user-attachments/assets/c6810ae7-0bbf-4e46-91dc-3846e56637d6)
 
-  ![img](file:///C:/Users/repli/AppData/Roaming/PolarisOffice/Favorite/19072_15138120/poclip1/04/image3.png)
-
-   
+  ![interest_xlsx](https://github.com/user-attachments/assets/6e5006d8-dd67-47d3-b94e-a012b4a7aa8b)
 
   이처럼 구글 트렌드 api를 통해 일자별 유튜버에 대한 관심도를 얻을 수 있었다. 추가적으로 이 데이터들을 웹 페이지에 띄워주어서 사용자들에게 제공하려고 한다.
 
@@ -532,8 +530,8 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   print("연관 검색어가 'related_queries.xlsx'로 저장되었습니다.")
   
   ```
-
-  ![img](file:///C:/Users/repli/AppData/Roaming/PolarisOffice/Favorite/19072_15138120/poclip1/04/image5.png)
+  
+  ![related_keyword](https://github.com/user-attachments/assets/0c1b8eda-bf28-4d81-849a-9be44d17c80b)
 
   이처럼 연관검색어를 얻고 이를 웹페이지에 부가적인 정보로 알려주며, 추가적인 연관검색어 분석을 통해 positive와 negative를 얻을 수 있다.
 
