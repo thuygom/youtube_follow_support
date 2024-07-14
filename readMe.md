@@ -429,9 +429,9 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
 
   파이썬 Django Server에서 DB스키마를 생성하고, Managed를 false로 설정하므로서, 새로이 마이그레이션 하지않고 기존 Mysql DB 에서 데이터를 가져오도록 설정되었다. 이제 서버를 키고 localhost로 접속해보면
 
-  ![image](https://github.com/user-attachments/assets/630df037-2448-4400-84b6-4a23d6431e58)
+  ![runserver](https://github.com/user-attachments/assets/e06d9fec-8da9-48e3-9491-81676109446a)
 
-  ![image](https://github.com/user-attachments/assets/6fef5e6c-d74b-4f16-bacd-8fa5229df470)
+  ![prototype_web](https://github.com/user-attachments/assets/663f88ac-a430-433c-a67e-78b2e7ca3ea2)
 
   위처럼 유튜버들의 스탯과 댓글들을 확인할 수 있다.
 
