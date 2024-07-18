@@ -20,8 +20,21 @@ keywords = ["오킹", "한동숙", "뻑가", "깡 스타일리스트", "때잉 �
 # 3개월 전 데이터를 가져오기 위해 시간 범위 설정
 timeframe = 'today 3-m'
 
-# pytrends로 데이터 요청
-pytrends.build_payload(keywords, cat=0, timeframe=timeframe, geo='', gprop='')
+# 요청 함수 정의
+def request_trends_data(pytrends, keywords, timeframe):
+    while True:
+        try:
+            pytrends.build_payload(keywords, cat=0, timeframe=timeframe, geo='', gprop='')
+            break  # 성공적으로 요청하면 루프 종료
+        except Exception as e:
+            if '429' in str(e):  # 429 에러 감지
+                print("429 Too Many Requests error encountered. Waiting for 1 minute before retrying...")
+                time.sleep(60)  # 1분 대기 후 재시도
+            else:
+                raise  # 다른 에러는 다시 발생시킴
+
+# 데이터 요청
+request_trends_data(pytrends, keywords, timeframe)
 time.sleep(60)  # 요청 후 대기
 
 # 관심도 데이터 가져오기
