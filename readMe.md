@@ -534,6 +534,74 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   ![related_keyword](https://github.com/user-attachments/assets/0c1b8eda-bf28-4d81-849a-9be44d17c80b)
 
   이처럼 연관검색어를 얻고 이를 웹페이지에 부가적인 정보로 알려주며, 추가적인 연관검색어 분석을 통해 positive와 negative를 얻을 수 있다.
+  
+  [image_caption.py]
+  
+  ```python
+  import torch
+  from PIL import Image
+  from transformers import BlipProcessor, BlipForConditionalGeneration
+  import cv2
+  import matplotlib.pyplot as plt
+  
+  # Hugging Face 모델 허브에서 blip 모델 로드
+  model_name = "Salesforce/blip-image-captioning-base"
+  processor = BlipProcessor.from_pretrained(model_name)
+  model = BlipForConditionalGeneration.from_pretrained(model_name)
+  
+  # 이미지 로드
+  image_path = "../images/default.jpg"
+  image = Image.open(image_path).convert("RGB")
+  
+  # 입력 데이터 처리
+  inputs = processor(images=image, return_tensors="pt")
+  
+  # 모델 예측
+  outputs = model.generate(**inputs)
+  caption = processor.decode(outputs[0], skip_special_tokens=True)
+  
+  print(f"Generated Caption: {caption}")
+  
+  
+  def add_keywords_to_caption(caption, keywords):
+      # 간단한 예시로, 키워드를 캡션 끝에 추가합니다.
+      new_caption = caption + " " + " ".join(keywords)
+      return new_caption
+  
+  keywords = ["new", "keywords"]
+  modified_caption = add_keywords_to_caption(caption, keywords)
+  print(f"Modified Caption: {modified_caption}")
+  
+  
+  def extract_image_features(image_path):
+      image = cv2.imread(image_path)
+      gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+      # 여기서는 간단히 SIFT를 사용하여 주요 특징점을 추출합니다.
+      sift = cv2.SIFT_create()
+      keypoints, descriptors = sift.detectAndCompute(gray, None)
+      return keypoints, descriptors
+  
+  def print_keypoints_and_descriptors(keypoints, descriptors):
+      print(f"Extracted {len(keypoints)} keypoints and descriptors.")
+      
+      for i, kp in enumerate(keypoints):
+          print(f"Keypoint {i}:")
+          print(f" - pt: {kp.pt}")
+          print(f" - size: {kp.size}")
+          print(f" - angle: {kp.angle}")
+          print(f" - response: {kp.response}")
+          print(f" - octave: {kp.octave}")
+          print(f" - class_id: {kp.class_id}")
+          print(f"Descriptor {i}: {descriptors[i]}")
+  
+  
+  keypoints, descriptors = extract_image_features(image_path)
+  print_keypoints_and_descriptors(keypoints, descriptors)
+  
+  
+  ```
+  
+  이미지를 Blip모델이 분석하고 캡션을 생성하며, openCV 라이브러리의 SIFT알고리즘을 통해 원본이미지의 패치별 키값와 설명을 저장하고, 생성된 캡션을 추가적인 작업을 통해 수정하고 수정된 캡션과 원본이미지의 패치별 특징을 기반으로 새로운 이미지를 생성하기 위한 전처리를 진행했다. 이후 다음 파일에서는 이러한 값들을 기반으로 이미지를 생성할 것이다.
 
 **3. 개발 레퍼런스**
 
