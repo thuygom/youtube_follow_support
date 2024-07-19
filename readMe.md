@@ -603,6 +603,8 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   
   이미지를 Blip모델이 분석하고 캡션을 생성하며, openCV 라이브러리의 SIFT알고리즘을 통해 원본이미지의 패치별 키값와 설명을 저장하고, 생성된 캡션을 추가적인 작업을 통해 수정하고 수정된 캡션과 원본이미지의 패치별 특징을 기반으로 새로운 이미지를 생성하기 위한 전처리를 진행했다. 이후 다음 파일에서는 이러한 값들을 기반으로 이미지를 생성할 것이다.
 
+![image](https://github.com/user-attachments/assets/481f740c-adf0-415c-8058-fffb0a362093)
+
 **3. 개발 레퍼런스**
 
 https://htrend-4d67e.web.app/
