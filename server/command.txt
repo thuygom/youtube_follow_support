@@ -1,0 +1,4 @@
+cd followSupport
+python manage.py runserver
+python manage.py startapp followSupportTest
+mysql -u root -p -h localhost -P 3306 followSupport

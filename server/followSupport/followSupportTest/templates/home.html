@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Video Stats and Comments</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap;
+            /* 긴 텍스트를 한 줄로 유지 */
+            overflow: hidden;
+            /* 넘치는 부분 숨김 */
+            text-overflow: ellipsis;
+            /* 넘치는 부분에 '...' 표시 */
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* 특정 필드에 너비 제한을 줄 수도 있습니다 */
+        td.channel-description {
+            max-width: 200px;
+            /* 최대 너비 지정 */
+        }
+    </style>
+
+    <script>
+        function updateURLParameter(param, value) {
+            var url = new URL(window.location.href);
+            url.searchParams.set(param, value);
+            window.history.replaceState({}, '', url);
+        }
+
+        var videoId;
+        // 비디오 아이디 선택 시 실행되는 함수
+        function showComments() {
+            // 선택된 비디오 아이디 가져오기
+            videoId = document.querySelector('input[name="video_id"]:checked').value;
+        }
+
+        function viewComments() {
+            return videoId;
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Video Stats</h1>
+    <!-- 선택 박스 -->
+    <form method="GET">
+        <label for="category">Choose a category:</label>
+        <select name="category" id="category" onchange="updateURLParameter('category', this.value)">
+            <option value="">Select a category</option>
+            <option value="VIDEO_Oking">오킹</option>
+            <option value="VIDEO_STYLE">깡 스타일리스트</option>
+            <option value="VIDEO_GAME">동수칸</option>
+            <option value="VIDEO_MUSIC">때잉 플레이리스트</option>
+            <option value="VIDEO_ISSUE">뻑가</option>
+        </select>
+        <input type="submit" value="Submit">
+    </form>
+
+    <!-- 선택된 카테고리의 VideoStat 정보 출력 -->
+    <h2>Selected Youtuber</h2>
+    {% if selected_category %}
+    <table>
+        <thead>
+            <tr>
+                <th>Video ID</th>
+                <th>Upload Date</th>
+                <th>Date</th>
+                <th>View Count</th>
+                <th>Like Count</th>
+                <th>Comment Count</th>
+                <th>Subscriber Count</th>
+                <th>Channel ID</th>
+                <th>Channel Title</th>
+                <th>Channel Description</th>
+                <th>Topic Categories</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Tags</th>
+                <th>Thumbnails</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for v in videos_selected %}
+            <tr>
+                <td>{{ v.video_id }}</td>
+                <td>{{ v.upload_date }}</td>
+                <td>{{ v.date }}</td>
+                <td>{{ v.view_count }}</td>
+                <td>{{ v.like_count }}</td>
+                <td>{{ v.comment_count }}</td>
+                <td>{{ v.subscriber_count }}</td>
+                <td>{{ v.channel_id }}</td>
+                <td>{{ v.channel_title }}</td>
+                <td>{{ v.channel_description }}</td>
+                <td>{{ v.topic_categories }}</td>
+                <td>{{ v.title }}</td>
+                <td>{{ v.description }}</td>
+                <td>{{ v.tags }}</td>
+                <td>{{ v.thumbnails }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- 비디오 선택 폼 -->
+    <form>
+        <label for="video_id">Choose a video:</label><br>
+        {% for video in videos_selected %}
+        <input type="radio" id="{{ video.video_id }}" name="video_id" value="{{ video.video_id }}"
+            onclick="showComments()">
+        <label for="{{ video.video_id }}">{{ video.title }}</label><br>
+        {% endfor %}
+    </form>
+
+    {% if selected_category %}
+    <table>
+        <thead>
+            <tr>
+                <th>Author</th>
+                <th>Date</th>
+                <th>Number of Likes</th>
+                <th>Emotion</th>
+                <th>Object</th>
+                <th>Comment</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in Comment_data %}
+            <!-- 출력할 내용 -->
+            <tr>
+                <td>{{ c.author }}</td>
+                <td>{{ c.date }}</td>
+                <td>{{ c.num_likes }}</td>
+                <td>{{ c.emotion }}</td>
+                <td>{{ c.object }}</td>
+                <td>{{ c.comment }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+
+    <hr>
+
+    <h1>Video Stats and Comments</h1>
+
+    <!-- All Videos 섹션 -->
+    <details>
+        <summary>All Videos</summary>
+        <ul>
+            {% for v in VideoStat_data %}
+            <li>{{ v.title }} ({{ v.view_count }} views, {{ v.like_count }} likes)</li>
+            {% endfor %}
+        </ul>
+    </details>
+
+    <hr>
+
+    <!-- 전체 Comment 정보 출력 -->
+    <details>
+        <summary>Comments</summary>
+        <ul>
+            {% for c in Comment_data %}
+            <li>{{ c.comment }} by {{ c.author }} ({{ c.num_likes }} likes, {{ c.date }})</li>
+            {% endfor %}
+        </ul>
+    </details>
+</body>
+
+</html>

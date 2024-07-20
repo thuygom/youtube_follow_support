@@ -196,6 +196,8 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
 
 ![image](https://github.com/thuygom/youtube_follow_support/assets/138266353/81e94100-55d8-47aa-bc2f-ca53b27a52c8)
 
+![image](https://github.com/thuygom/youtube_follow_support/assets/138266353/dbac2972-bb05-4d4e-9c8e-3db8f7d9c126)
+
   [koBert model]
 
   ```python
@@ -283,6 +285,8 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
 
   ![koBert](https://github.com/thuygom/youtube_follow_support/assets/138266353/8e20dcd9-bdde-4f93-aa60-85263ba92f39)
 
+  ![openAI](https://github.com/thuygom/youtube_follow_support/assets/138266353/87f59c4e-396e-461d-8647-fcf33841eb60)
+
   | Main Developer | 김정훈 |
   | :------------: | :----: |
 
@@ -333,9 +337,9 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
 
   이렇게 python에서 DB쪽으로 업로드 해주면 다음 사진과 같이 DB에 올라간다.
 
-  사진
+  ![youtuber_stat](https://github.com/thuygom/youtube_follow_support/assets/138266353/b0c7e030-9341-41ab-a952-f55da65cf816)
 
-  사진
+  ![comment_db](https://github.com/thuygom/youtube_follow_support/assets/138266353/0876b3b7-620e-4f5b-bef7-2ffff023c614)
 
   | Main Developer | 김정훈 |
   | :------------: | :----: |
@@ -372,9 +376,234 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   | Main Developer | 김정훈 |
   | :------------: | :----: |
 
+
+- Mysql 과 Django Server 연동 및 웹퍼블리싱
+
+  ```python
+  # followSupportTest/models.py
   
+  from django.db import models
+  
+  class VideoStat(models.Model):
+      video_num = models.IntegerField(primary_key=True)
+      video_id = models.CharField(max_length=50)
+      upload_date = models.DateTimeField()
+      date = models.DateField()
+      view_count = models.IntegerField()
+      like_count = models.IntegerField()
+      comment_count = models.IntegerField()
+      subscriber_count = models.IntegerField()
+      channel_id = models.CharField(max_length=50)
+      channel_title = models.CharField(max_length=100)
+      channel_description = models.TextField(null=True)
+      topic_categories = models.TextField(null=True)
+      title = models.CharField(max_length=200, null=True)
+      description = models.TextField(null=True)
+      tags = models.TextField(null=True)
+      thumbnails = models.CharField(max_length=255)
+  
+      class Meta:
+          managed = False
+          db_table = 'VideoStat'
+  
+      def __str__(self):
+          return self.video_id
+  
+  class Comment(models.Model):
+      comment_id = models.IntegerField(primary_key=True)
+      comment = models.TextField()
+      author = models.CharField(max_length=100)
+      date = models.DateTimeField()
+      num_likes = models.IntegerField()
+      video_id = models.CharField(max_length=100)
+      emotion = models.CharField(max_length=100)
+      object = models.CharField(max_length=100)
+  
+      class Meta:
+          managed = False
+          db_table = 'Comments'
+  
+      def __str__(self):
+          return self.comment
+  ```
 
+  파이썬 Django Server에서 DB스키마를 생성하고, Managed를 false로 설정하므로서, 새로이 마이그레이션 하지않고 기존 Mysql DB 에서 데이터를 가져오도록 설정되었다. 이제 서버를 키고 localhost로 접속해보면
 
+  ![runserver](https://github.com/user-attachments/assets/e06d9fec-8da9-48e3-9491-81676109446a)
+
+  ![prototype_web](https://github.com/user-attachments/assets/663f88ac-a430-433c-a67e-78b2e7ca3ea2)
+
+  위처럼 유튜버들의 스탯과 댓글들을 확인할 수 있다.
+
+- google trend API를 활용한 일자별 관심도 시각화 및 연관 검색어 추출
+
+  [google_trend_api.py]
+
+  ```python
+  import time
+  from pytrends.request import TrendReq
+  import matplotlib.pyplot as plt
+  from matplotlib import font_manager, rc
+  import pandas as pd
+  
+  # 한글 폰트 설정 (Windows에서 기본 폰트 사용)
+  font_path = 'C:/Windows/Fonts/malgun.ttf'  # Windows 기본 폰트 경로 설정
+  
+  # 폰트 설정
+  font_name = font_manager.FontProperties(fname=font_path).get_name()
+  rc('font', family=font_name)
+  
+  # pytrends 세션 시작
+  pytrends = TrendReq(hl='ko', tz=360)  # 'hl'을 'ko'로 설정하여 한글 결과 받기
+  
+  # 유튜버 키워드 리스트
+  keywords = ["오킹", "한동숙", "뻑가", "깡 스타일리스트", "때잉 플레이리스트"]
+  
+  # 3개월 전 데이터를 가져오기 위해 시간 범위 설정
+  timeframe = 'today 3-m'
+  
+  # pytrends로 데이터 요청
+  pytrends.build_payload(keywords, cat=0, timeframe=timeframe, geo='', gprop='')
+  time.sleep(60)  # 요청 후 대기
+  
+  # 관심도 데이터 가져오기
+  interest_over_time_df = pytrends.interest_over_time()
+  
+  # 데이터프레임을 Excel 파일로 저장
+  interest_over_time_df.to_excel('trend_interest.xlsx', index=True)
+  
+  # 데이터 시각화
+  plt.figure(figsize=(14, 8))
+  
+  for keyword in keywords:
+      plt.plot(interest_over_time_df.index, interest_over_time_df[keyword], label=keyword)
+  
+  plt.title('유튜버 관심도 (3개월 전 데이터)', fontsize=15)
+  plt.xlabel('날짜', fontsize=12)
+  plt.ylabel('관심도', fontsize=12)
+  plt.legend(title='유튜버', fontsize=10)
+  plt.xticks(rotation=45)
+  plt.grid(True)
+  plt.show()
+  ```
+
+  ![interst](https://github.com/user-attachments/assets/c6810ae7-0bbf-4e46-91dc-3846e56637d6)
+
+  ![interest_xlsx](https://github.com/user-attachments/assets/6e5006d8-dd67-47d3-b94e-a012b4a7aa8b)
+
+  이처럼 구글 트렌드 api를 통해 일자별 유튜버에 대한 관심도를 얻을 수 있었다. 추가적으로 이 데이터들을 웹 페이지에 띄워주어서 사용자들에게 제공하려고 한다.
+
+   
+
+  [ Google_related.py ]
+
+  ```python
+  import time
+  from pytrends.request import TrendReq
+  import pandas as pd
+  
+  # pytrends 세션 시작
+  pytrends = TrendReq(hl='ko', tz=360)
+  
+  # 유튜버 키워드 리스트
+  keywords = ["오킹", "한동숙", "뻑가", "깡 스타일리스트", "때잉 플레이리스트"]
+  
+  # 연관 검색어를 저장할 데이터프레임 초기화
+  related_queries_df = pd.DataFrame(columns=['유튜버', '연관 검색어'])
+  
+  # 각 유튜버 키워드에 대해 연관 검색어 가져오기
+  for keyword in keywords:
+      time.sleep(600)  # 요청 간 대기
+      pytrends.build_payload([keyword], cat=0, timeframe='today 3-m', geo='', gprop='')
+      related_queries = pytrends.related_queries()[keyword]['top']
+      
+      if related_queries is not None:
+          # 각 연관 검색어를 데이터프레임에 추가
+          for _, row in related_queries.iterrows():
+              new_row = pd.DataFrame({'유튜버': [keyword], '연관 검색어': [row['query']]})
+              related_queries_df = pd.concat([related_queries_df, new_row], ignore_index=True)
+      print(related_queries)
+  
+  # 데이터프레임을 Excel 파일로 저장
+  related_queries_df.to_excel('related_queries.xlsx', index=False)
+  
+  print("연관 검색어가 'related_queries.xlsx'로 저장되었습니다.")
+  
+  ```
+  
+  ![related_keyword](https://github.com/user-attachments/assets/0c1b8eda-bf28-4d81-849a-9be44d17c80b)
+
+  이처럼 연관검색어를 얻고 이를 웹페이지에 부가적인 정보로 알려주며, 추가적인 연관검색어 분석을 통해 positive와 negative를 얻을 수 있다.
+  
+  [image_caption.py]
+  
+  ```python
+  import torch
+  from PIL import Image
+  from transformers import BlipProcessor, BlipForConditionalGeneration
+  import cv2
+  import matplotlib.pyplot as plt
+  
+  # Hugging Face 모델 허브에서 blip 모델 로드
+  model_name = "Salesforce/blip-image-captioning-base"
+  processor = BlipProcessor.from_pretrained(model_name)
+  model = BlipForConditionalGeneration.from_pretrained(model_name)
+  
+  # 이미지 로드
+  image_path = "../images/default.jpg"
+  image = Image.open(image_path).convert("RGB")
+  
+  # 입력 데이터 처리
+  inputs = processor(images=image, return_tensors="pt")
+  
+  # 모델 예측
+  outputs = model.generate(**inputs)
+  caption = processor.decode(outputs[0], skip_special_tokens=True)
+  
+  print(f"Generated Caption: {caption}")
+  
+  
+  def add_keywords_to_caption(caption, keywords):
+      # 간단한 예시로, 키워드를 캡션 끝에 추가합니다.
+      new_caption = caption + " " + " ".join(keywords)
+      return new_caption
+  
+  keywords = ["new", "keywords"]
+  modified_caption = add_keywords_to_caption(caption, keywords)
+  print(f"Modified Caption: {modified_caption}")
+  
+  
+  def extract_image_features(image_path):
+      image = cv2.imread(image_path)
+      gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+      # 여기서는 간단히 SIFT를 사용하여 주요 특징점을 추출합니다.
+      sift = cv2.SIFT_create()
+      keypoints, descriptors = sift.detectAndCompute(gray, None)
+      return keypoints, descriptors
+  
+  def print_keypoints_and_descriptors(keypoints, descriptors):
+      print(f"Extracted {len(keypoints)} keypoints and descriptors.")
+      
+      for i, kp in enumerate(keypoints):
+          print(f"Keypoint {i}:")
+          print(f" - pt: {kp.pt}")
+          print(f" - size: {kp.size}")
+          print(f" - angle: {kp.angle}")
+          print(f" - response: {kp.response}")
+          print(f" - octave: {kp.octave}")
+          print(f" - class_id: {kp.class_id}")
+          print(f"Descriptor {i}: {descriptors[i]}")
+  
+  
+  keypoints, descriptors = extract_image_features(image_path)
+  print_keypoints_and_descriptors(keypoints, descriptors)
+  
+  
+  ```
+  
+  이미지를 Blip모델이 분석하고 캡션을 생성하며, openCV 라이브러리의 SIFT알고리즘을 통해 원본이미지의 패치별 키값와 설명을 저장하고, 생성된 캡션을 추가적인 작업을 통해 수정하고 수정된 캡션과 원본이미지의 패치별 특징을 기반으로 새로운 이미지를 생성하기 위한 전처리를 진행했다. 이후 다음 파일에서는 이러한 값들을 기반으로 이미지를 생성할 것이다.
+
+![image](https://github.com/user-attachments/assets/481f740c-adf0-415c-8058-fffb0a362093)
 
 **3. 개발 레퍼런스**
 
