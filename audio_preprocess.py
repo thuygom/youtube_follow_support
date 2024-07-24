@@ -1,7 +1,5 @@
 from pydub import AudioSegment
-from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
-import torch
-import torchaudio
+from transformers import pipeline
 
 # Step 1: Extract audio from video
 def extract_audio(video_path, audio_output_path='audio.wav'):
@@ -11,29 +9,13 @@ def extract_audio(video_path, audio_output_path='audio.wav'):
 
 # Step 2: Analyze audio using a pre-trained model
 def analyze_audio(audio_path):
-    # Load the processor and model for multilingual support (including Korean)
-    processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-large-xlsr-53")
-    model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-large-xlsr-53")
+    # Load a pre-trained automatic speech recognition model for Korean
+    # Example model name: "kresnik/wav2vec2-large-xlsr-korean"
+    audio_classifier = pipeline("automatic-speech-recognition", model="kresnik/wav2vec2-large-xlsr-korean")
 
-    # Load the audio file
-    waveform, sample_rate = torchaudio.load(audio_path)
-    waveform = waveform.squeeze()
-
-    # Resample if the sample rate is not 16000 Hz
-    if sample_rate != 16000:
-        waveform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=16000)(waveform)
-
-    # Tokenize the audio
-    input_values = processor(waveform, sampling_rate=16000, return_tensors="pt", padding="longest").input_values
-
-    # Perform inference
-    with torch.no_grad():
-        logits = model(input_values).logits
-
-    # Decode the predicted tokens into text
-    predicted_ids = torch.argmax(logits, dim=-1)
-    transcription = processor.batch_decode(predicted_ids)[0]
-    return transcription
+    # Process the audio file
+    result = audio_classifier(audio_path)
+    return result['text']
 
 # Main function
 def main():
