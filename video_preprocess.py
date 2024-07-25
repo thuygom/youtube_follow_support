@@ -54,12 +54,23 @@ def analyze_frames(frames):
     print(f"Total frames: {num_frames}")
     print(f"Preprocessed frames shape: {preprocessed_frames[0].shape if num_frames > 0 else 'No frames'}")
 
+def save_frames_as_images(frames, output_dir='frames'):
+    """프레임을 이미지 파일로 저장합니다."""
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    for i, frame in enumerate(frames):
+        image_filename = os.path.join(output_dir, f'frame_{i:04d}.png')
+        cv2.imwrite(image_filename, frame)
+        print(f'Saved {image_filename}')
+
 # Main function
 def main():
-    video_url = 'https://www.youtube.com/watch?v=l9c4JeN5NE8'
+    video_url = 'https://www.youtube.com/watch?v=hs_uw_o0fT4'
     download_video(video_url)
     
     frames = extract_frames('video.mp4')
+    save_frames_as_images(frames)  # Save frames as images
     analyze_frames(frames)
 
 if __name__ == "__main__":
