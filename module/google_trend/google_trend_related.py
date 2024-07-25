@@ -13,7 +13,6 @@ related_queries_df = pd.DataFrame(columns=['유튜버', '연관 검색어'])
 
 # 각 유튜버 키워드에 대해 연관 검색어 가져오기
 for keyword in keywords:
-    time.sleep(600)  # 요청 간 대기
     pytrends.build_payload([keyword], cat=0, timeframe='today 3-m', geo='', gprop='')
     related_queries = pytrends.related_queries()[keyword]['top']
     
@@ -23,6 +22,7 @@ for keyword in keywords:
             new_row = pd.DataFrame({'유튜버': [keyword], '연관 검색어': [row['query']]})
             related_queries_df = pd.concat([related_queries_df, new_row], ignore_index=True)
     print(related_queries)
+    time.sleep(910)  # 요청 간 대기
 
 # 데이터프레임을 Excel 파일로 저장
 related_queries_df.to_excel('related_queries.xlsx', index=False)

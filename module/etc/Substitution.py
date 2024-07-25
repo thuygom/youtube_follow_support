@@ -52,9 +52,9 @@ def replace_words(morphs, replacement_dict):
 
 # 두 번째 컬럼의 각 문장에 대해 형태소 분석 수행 및 문장 변환
 def analyze_and_replace(sentence):
-    #morphs = okt.morphs(sentence, stem=True, norm=True)
-    #replaced_morphs = replace_words(morphs, replace_dict)
-    #return ' '.join(replaced_morphs)
+    morphs = okt.morphs(sentence, stem=True, norm=True)
+    replaced_morphs = replace_words(morphs, replace_dict)
+    return ' '.join(replaced_morphs)
     return sentence
 
 # 1번 열(댓글 문장)에 대해 전처리 및 형태소 분석 수행
