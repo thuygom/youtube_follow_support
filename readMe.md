@@ -14,7 +14,10 @@
     - 댓글 개수
     - 영상 주기
 - **목표 1. 도출해 낸 다양한 Stat을 기반으로 유튜버 인플루언서들의 Ranking List를 만들고, 유튜버의 Stat을 보여줄 수 있는 웹서비스를 운영한다.(1~3주차 진행)**
-- **목표2. 웹서비스에 멀티 모달리티를 활용한 자동 썸네일 제작 혹은 추가적인 기능을 제공하는 AI Model을 제작한다.(4~7주차 진행 예정)**
+- **목표2. 웹서비스에 멀티 모달리티를 활용한 자동 썸네일 제작 혹은 추가적인 기능을 제공하는 AI Model을 제작한다.(4~7주차 진행)**
+
+[프로그램 흐름도]
+![흐름도](https://github.com/user-attachments/assets/708cc30f-6adc-4376-a1d2-f72e84674b11)
 
 **2. 활동 수행 결과물** 
 
@@ -435,6 +438,11 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
 
   위처럼 유튜버들의 스탯과 댓글들을 확인할 수 있다.
 
+  | Main Developer | 김정훈 |
+  | :------------: | :----: |
+
+  
+
 - google trend API를 활용한 일자별 관심도 시각화 및 연관 검색어 추출
 
   [google_trend_api.py]
@@ -495,8 +503,11 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
 
    
 
+  | Main Developer | 김정훈 |
+  | :------------: | :----: |
+  
   [ Google_related.py ]
-
+  
   ```python
   import time
   from pytrends.request import TrendReq
@@ -532,8 +543,11 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
   ```
   
   ![related_keyword](https://github.com/user-attachments/assets/0c1b8eda-bf28-4d81-849a-9be44d17c80b)
-
+  
   이처럼 연관검색어를 얻고 이를 웹페이지에 부가적인 정보로 알려주며, 추가적인 연관검색어 분석을 통해 positive와 negative를 얻을 수 있다.
+  
+  | Main Developer | 김정훈 |
+  | :------------: | :----: |
   
   [image_caption.py]
   
@@ -605,6 +619,427 @@ google Youtuve Api Version3를 사용해 비디오 Hash값부터 다양한 stat�
 
 ![image](https://github.com/user-attachments/assets/481f740c-adf0-415c-8058-fffb0a362093)
 
+| Main Developer | 김정훈 |
+| :------------: | :----: |
+
+[speech to text python module]
+
+```python
+from google.cloud import speech_v1p1beta1 as speech
+from pydub import AudioSegment
+import io
+import os
+import wave
+
+def get_sample_rate(file_path):
+    """WAV 파일의 샘플 레이트를 확인합니다."""
+    with wave.open(file_path, 'rb') as wf:
+        sample_rate = wf.getframerate()
+    return sample_rate
+
+def convert_to_mono(file_path):
+    """오디오 파일을 모노로 변환합니다."""
+    audio = AudioSegment.from_file(file_path)
+    if audio.channels != 1:
+        audio = audio.set_channels(1)
+        mono_file = f"mono_{os.path.basename(file_path)}"
+        audio.export(mono_file, format="wav")
+        return mono_file
+    return file_path
+
+def resample_audio(file_path, target_sample_rate=48000):
+    """오디오 파일을 리샘플링합니다."""
+    audio = AudioSegment.from_file(file_path)
+    if audio.frame_rate != target_sample_rate:
+        audio = audio.set_frame_rate(target_sample_rate)
+        resampled_file = f"resampled_{os.path.basename(file_path)}"
+        audio.export(resampled_file, format="wav")
+        return resampled_file
+    return file_path
+
+def convert_to_16bit(file_path):
+    """WAV 파일을 16비트 샘플로 변환합니다."""
+    audio = AudioSegment.from_file(file_path)
+    audio = audio.set_sample_width(2)  # 16비트 샘플
+    bit16_file = f"bit16_{os.path.basename(file_path)}"
+    audio.export(bit16_file, format="wav")
+    return bit16_file
+
+def split_audio(file_path, chunk_length_ms=10000):
+    """오디오 파일을 주어진 길이(밀리초)로 자릅니다."""
+    audio = AudioSegment.from_file(file_path)
+    chunks = []
+    for i in range(0, len(audio), chunk_length_ms):
+        chunk = audio[i:i + chunk_length_ms]
+        chunk_file = f"chunk_{i // chunk_length_ms}.wav"
+        chunk.export(chunk_file, format="wav")
+        chunks.append(chunk_file)
+    return chunks
+
+def transcribe_audio_file(file_path):
+    """Google Cloud Speech-to-Text API를 사용하여 음성을 텍스트로 변환합니다."""
+    client = speech.SpeechClient.from_service_account_file('myKey.json')
+
+    # 오디오 파일의 샘플 레이트 확인
+    sample_rate = get_sample_rate(file_path)
+
+    # 오디오 파일을 모노로 변환
+    mono_file_path = convert_to_mono(file_path)
+
+    # 오디오 파일 리샘플링
+    resampled_file_path = resample_audio(mono_file_path, target_sample_rate=sample_rate)
+
+    # 오디오 파일 비트 깊이 변환
+    bit16_file_path = convert_to_16bit(resampled_file_path)
+
+    with io.open(bit16_file_path, "rb") as audio_file:
+        content = audio_file.read()
+
+    audio = speech.RecognitionAudio(content=content)
+    config = speech.RecognitionConfig(
+        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+        sample_rate_hertz=sample_rate,  # 리샘플링한 샘플 레이트 사용
+        language_code="ko-KR",
+    )
+
+    # 파일이 길 경우, long_running_recognize 사용
+    operation = client.long_running_recognize(config=config, audio=audio)
+    print('Waiting for operation to complete...')
+    response = operation.result(timeout=90)
+
+    transcripts = []
+    for result in response.results:
+        transcripts.append(result.alternatives[0].transcript)
+
+    return transcripts
+
+def transcribe_chunks(chunk_files):
+    """여러 오디오 조각을 텍스트로 변환합니다."""
+    all_transcripts = []
+    for chunk_file in chunk_files:
+        print(f"Transcribing {chunk_file}...")
+        transcripts = transcribe_audio_file(chunk_file)
+        print(transcripts)
+        all_transcripts.extend(transcripts)
+        os.remove(chunk_file)  # 임시 조각 파일 삭제
+    return all_transcripts
+
+# 사용 예제
+audio_file_path = 'audio.wav'
+chunk_files = split_audio(audio_file_path, chunk_length_ms=10000)  # 10초 길이의 조각으로 나누기
+transcripts = transcribe_chunks(chunk_files)
+
+# 전체 텍스트 출력
+print("\n".join(transcripts))
+
+```
+
+
+
+| Main Developer | 김정훈 |
+| :------------: | :----: |
+| Sub Developer  | 노태원 |
+
+[google OCR Module]
+
+```python
+from google.cloud import vision_v1
+import io
+
+# 이미지에서 텍스트 추출
+def detect_text_in_image(image_path, client):
+    with io.open(image_path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision_v1.Image(content=content)
+    response = client.text_detection(image=image)
+    texts = response.text_annotations
+
+    if texts:
+        print(f"Detected text in {image_path}:")
+        for text in texts:
+            print(text.description)
+    else:
+        print(f"No text detected in {image_path}.")
+
+# Google Cloud Vision 클라이언트 설정
+def setup_vision_client():
+    return vision_v1.ImageAnnotatorClient.from_service_account_file('myKey.json')
+
+# 메인 함수
+def main():
+    image_path = './a.png'  # 텍스트를 추출할 이미지 파일의 경로
+
+    client = setup_vision_client()
+    detect_text_in_image(image_path, client)
+
+if __name__ == '__main__':
+    main()
+```
+
+| Main Developer | 김정훈 |
+| :------------: | :----: |
+| Sub Developer  | 노태원 |
+
+
+
+[image generate module]
+
+```python
+import os
+import requests
+import sys
+import copy
+from tqdm import tqdm
+import torch
+from transformers import AutoTokenizer, CLIPTextModel
+from diffusers import AutoencoderKL, UNet2DConditionModel
+from diffusers.utils.peft_utils import set_weights_and_activate_adapters
+from peft import LoraConfig
+p = "src/"
+sys.path.append(p)
+from model import make_1step_sched, my_vae_encoder_fwd, my_vae_decoder_fwd
+
+
+class TwinConv(torch.nn.Module):
+    def __init__(self, convin_pretrained, convin_curr):
+        super(TwinConv, self).__init__()
+        self.conv_in_pretrained = copy.deepcopy(convin_pretrained)
+        self.conv_in_curr = copy.deepcopy(convin_curr)
+        self.r = None
+
+    def forward(self, x):
+        x1 = self.conv_in_pretrained(x).detach()
+        x2 = self.conv_in_curr(x)
+        return x1 * (1 - self.r) + x2 * (self.r)
+
+
+class Pix2Pix_Turbo(torch.nn.Module):
+    def __init__(self, pretrained_name=None, pretrained_path=None, ckpt_folder="checkpoints", lora_rank_unet=8, lora_rank_vae=4):
+        super().__init__()
+        self.tokenizer = AutoTokenizer.from_pretrained("stabilityai/sd-turbo", subfolder="tokenizer")
+        self.text_encoder = CLIPTextModel.from_pretrained("stabilityai/sd-turbo", subfolder="text_encoder").cuda()
+        self.sched = make_1step_sched()
+
+        vae = AutoencoderKL.from_pretrained("stabilityai/sd-turbo", subfolder="vae")
+        vae.encoder.forward = my_vae_encoder_fwd.__get__(vae.encoder, vae.encoder.__class__)
+        vae.decoder.forward = my_vae_decoder_fwd.__get__(vae.decoder, vae.decoder.__class__)
+        # add the skip connection convs
+        vae.decoder.skip_conv_1 = torch.nn.Conv2d(512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False).cuda()
+        vae.decoder.skip_conv_2 = torch.nn.Conv2d(256, 512, kernel_size=(1, 1), stride=(1, 1), bias=False).cuda()
+        vae.decoder.skip_conv_3 = torch.nn.Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False).cuda()
+        vae.decoder.skip_conv_4 = torch.nn.Conv2d(128, 256, kernel_size=(1, 1), stride=(1, 1), bias=False).cuda()
+        vae.decoder.ignore_skip = False
+        unet = UNet2DConditionModel.from_pretrained("stabilityai/sd-turbo", subfolder="unet")
+
+        if pretrained_name == "edge_to_image":
+            url = "https://www.cs.cmu.edu/~img2img-turbo/models/edge_to_image_loras.pkl"
+            os.makedirs(ckpt_folder, exist_ok=True)
+            outf = os.path.join(ckpt_folder, "edge_to_image_loras.pkl")
+            if not os.path.exists(outf):
+                print(f"Downloading checkpoint to {outf}")
+                response = requests.get(url, stream=True)
+                total_size_in_bytes = int(response.headers.get('content-length', 0))
+                block_size = 1024  # 1 Kibibyte
+                progress_bar = tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
+                with open(outf, 'wb') as file:
+                    for data in response.iter_content(block_size):
+                        progress_bar.update(len(data))
+                        file.write(data)
+                progress_bar.close()
+                if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
+                    print("ERROR, something went wrong")
+                print(f"Downloaded successfully to {outf}")
+            p_ckpt = outf
+            sd = torch.load(p_ckpt, map_location="cpu")
+            unet_lora_config = LoraConfig(r=sd["rank_unet"], init_lora_weights="gaussian", target_modules=sd["unet_lora_target_modules"])
+            vae_lora_config = LoraConfig(r=sd["rank_vae"], init_lora_weights="gaussian", target_modules=sd["vae_lora_target_modules"])
+            vae.add_adapter(vae_lora_config, adapter_name="vae_skip")
+            _sd_vae = vae.state_dict()
+            for k in sd["state_dict_vae"]:
+                _sd_vae[k] = sd["state_dict_vae"][k]
+            vae.load_state_dict(_sd_vae)
+            unet.add_adapter(unet_lora_config)
+            _sd_unet = unet.state_dict()
+            for k in sd["state_dict_unet"]:
+                _sd_unet[k] = sd["state_dict_unet"][k]
+            unet.load_state_dict(_sd_unet)
+
+        elif pretrained_name == "sketch_to_image_stochastic":
+            # download from url
+            url = "https://www.cs.cmu.edu/~img2img-turbo/models/sketch_to_image_stochastic_lora.pkl"
+            os.makedirs(ckpt_folder, exist_ok=True)
+            outf = os.path.join(ckpt_folder, "sketch_to_image_stochastic_lora.pkl")
+            if not os.path.exists(outf):
+                print(f"Downloading checkpoint to {outf}")
+                response = requests.get(url, stream=True)
+                total_size_in_bytes = int(response.headers.get('content-length', 0))
+                block_size = 1024  # 1 Kibibyte
+                progress_bar = tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
+                with open(outf, 'wb') as file:
+                    for data in response.iter_content(block_size):
+                        progress_bar.update(len(data))
+                        file.write(data)
+                progress_bar.close()
+                if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
+                    print("ERROR, something went wrong")
+                print(f"Downloaded successfully to {outf}")
+            p_ckpt = outf
+            convin_pretrained = copy.deepcopy(unet.conv_in)
+            unet.conv_in = TwinConv(convin_pretrained, unet.conv_in)
+            sd = torch.load(p_ckpt, map_location="cpu")
+            unet_lora_config = LoraConfig(r=sd["rank_unet"], init_lora_weights="gaussian", target_modules=sd["unet_lora_target_modules"])
+            vae_lora_config = LoraConfig(r=sd["rank_vae"], init_lora_weights="gaussian", target_modules=sd["vae_lora_target_modules"])
+            vae.add_adapter(vae_lora_config, adapter_name="vae_skip")
+            _sd_vae = vae.state_dict()
+            for k in sd["state_dict_vae"]:
+                _sd_vae[k] = sd["state_dict_vae"][k]
+            vae.load_state_dict(_sd_vae)
+            unet.add_adapter(unet_lora_config)
+            _sd_unet = unet.state_dict()
+            for k in sd["state_dict_unet"]:
+                _sd_unet[k] = sd["state_dict_unet"][k]
+            unet.load_state_dict(_sd_unet)
+
+        elif pretrained_path is not None:
+            sd = torch.load(pretrained_path, map_location="cpu")
+            unet_lora_config = LoraConfig(r=sd["rank_unet"], init_lora_weights="gaussian", target_modules=sd["unet_lora_target_modules"])
+            vae_lora_config = LoraConfig(r=sd["rank_vae"], init_lora_weights="gaussian", target_modules=sd["vae_lora_target_modules"])
+            vae.add_adapter(vae_lora_config, adapter_name="vae_skip")
+            _sd_vae = vae.state_dict()
+            for k in sd["state_dict_vae"]:
+                _sd_vae[k] = sd["state_dict_vae"][k]
+            vae.load_state_dict(_sd_vae)
+            unet.add_adapter(unet_lora_config)
+            _sd_unet = unet.state_dict()
+            for k in sd["state_dict_unet"]:
+                _sd_unet[k] = sd["state_dict_unet"][k]
+            unet.load_state_dict(_sd_unet)
+
+        elif pretrained_name is None and pretrained_path is None:
+            print("Initializing model with random weights")
+            torch.nn.init.constant_(vae.decoder.skip_conv_1.weight, 1e-5)
+            torch.nn.init.constant_(vae.decoder.skip_conv_2.weight, 1e-5)
+            torch.nn.init.constant_(vae.decoder.skip_conv_3.weight, 1e-5)
+            torch.nn.init.constant_(vae.decoder.skip_conv_4.weight, 1e-5)
+            target_modules_vae = ["conv1", "conv2", "conv_in", "conv_shortcut", "conv", "conv_out",
+                "skip_conv_1", "skip_conv_2", "skip_conv_3", "skip_conv_4",
+                "to_k", "to_q", "to_v", "to_out.0",
+            ]
+            vae_lora_config = LoraConfig(r=lora_rank_vae, init_lora_weights="gaussian",
+                target_modules=target_modules_vae)
+            vae.add_adapter(vae_lora_config, adapter_name="vae_skip")
+            target_modules_unet = [
+                "to_k", "to_q", "to_v", "to_out.0", "conv", "conv1", "conv2", "conv_shortcut", "conv_out",
+                "proj_in", "proj_out", "ff.net.2", "ff.net.0.proj"
+            ]
+            unet_lora_config = LoraConfig(r=lora_rank_unet, init_lora_weights="gaussian",
+                target_modules=target_modules_unet
+            )
+            unet.add_adapter(unet_lora_config)
+            self.lora_rank_unet = lora_rank_unet
+            self.lora_rank_vae = lora_rank_vae
+            self.target_modules_vae = target_modules_vae
+            self.target_modules_unet = target_modules_unet
+
+        # unet.enable_xformers_memory_efficient_attention()
+        unet.to("cuda")
+        vae.to("cuda")
+        self.unet, self.vae = unet, vae
+        self.vae.decoder.gamma = 1
+        self.timesteps = torch.tensor([999], device="cuda").long()
+        self.text_encoder.requires_grad_(False)
+
+    def set_eval(self):
+        self.unet.eval()
+        self.vae.eval()
+        self.unet.requires_grad_(False)
+        self.vae.requires_grad_(False)
+
+    def set_train(self):
+        self.unet.train()
+        self.vae.train()
+        for n, _p in self.unet.named_parameters():
+            if "lora" in n:
+                _p.requires_grad = True
+        self.unet.conv_in.requires_grad_(True)
+        for n, _p in self.vae.named_parameters():
+            if "lora" in n:
+                _p.requires_grad = True
+        self.vae.decoder.skip_conv_1.requires_grad_(True)
+        self.vae.decoder.skip_conv_2.requires_grad_(True)
+        self.vae.decoder.skip_conv_3.requires_grad_(True)
+        self.vae.decoder.skip_conv_4.requires_grad_(True)
+
+    def forward(self, c_t, prompt=None, prompt_tokens=None, deterministic=True, r=1.0, noise_map=None):
+        # either the prompt or the prompt_tokens should be provided
+        assert (prompt is None) != (prompt_tokens is None), "Either prompt or prompt_tokens should be provided"
+
+        if prompt is not None:
+            # encode the text prompt
+            caption_tokens = self.tokenizer(prompt, max_length=self.tokenizer.model_max_length,
+                                            padding="max_length", truncation=True, return_tensors="pt").input_ids.cuda()
+            caption_enc = self.text_encoder(caption_tokens)[0]
+        else:
+            caption_enc = self.text_encoder(prompt_tokens)[0]
+        if deterministic:
+            encoded_control = self.vae.encode(c_t).latent_dist.sample() * self.vae.config.scaling_factor
+            model_pred = self.unet(encoded_control, self.timesteps, encoder_hidden_states=caption_enc,).sample
+            x_denoised = self.sched.step(model_pred, self.timesteps, encoded_control, return_dict=True).prev_sample
+            self.vae.decoder.incoming_skip_acts = self.vae.encoder.current_down_blocks
+            output_image = (self.vae.decode(x_denoised / self.vae.config.scaling_factor).sample).clamp(-1, 1)
+        else:
+            # scale the lora weights based on the r value
+            self.unet.set_adapters(["default"], weights=[r])
+            set_weights_and_activate_adapters(self.vae, ["vae_skip"], [r])
+            encoded_control = self.vae.encode(c_t).latent_dist.sample() * self.vae.config.scaling_factor
+            # combine the input and noise
+            unet_input = encoded_control * r + noise_map * (1 - r)
+            self.unet.conv_in.r = r
+            unet_output = self.unet(unet_input, self.timesteps, encoder_hidden_states=caption_enc,).sample
+            self.unet.conv_in.r = None
+            x_denoised = self.sched.step(unet_output, self.timesteps, unet_input, return_dict=True).prev_sample
+            self.vae.decoder.incoming_skip_acts = self.vae.encoder.current_down_blocks
+            self.vae.decoder.gamma = r
+            output_image = (self.vae.decode(x_denoised / self.vae.config.scaling_factor).sample).clamp(-1, 1)
+        return output_image
+
+    def save_model(self, outf):
+        sd = {}
+        sd["unet_lora_target_modules"] = self.target_modules_unet
+        sd["vae_lora_target_modules"] = self.target_modules_vae
+        sd["rank_unet"] = self.lora_rank_unet
+        sd["rank_vae"] = self.lora_rank_vae
+        sd["state_dict_unet"] = {k: v for k, v in self.unet.state_dict().items() if "lora" in k or "conv_in" in k}
+        sd["state_dict_vae"] = {k: v for k, v in self.vae.state_dict().items() if "lora" in k or "skip" in k}
+        torch.save(sd, outf)
+
+```
+
+| Main Developer | 김정훈 |
+| :------------: | :----: |
+
+
+
+[완성본 웹페이지 결과물]
+![webMain](https://github.com/user-attachments/assets/bbcce266-67ff-4427-b76e-4abe4ddf78bd)
+
+![adRank](https://github.com/user-attachments/assets/912926c8-7bc6-4646-82a4-d317c58f456d)
+
+![NarakRank](https://github.com/user-attachments/assets/42995566-41ec-4d0b-8d9f-b803da091624)
+
+![statDashBoard](https://github.com/user-attachments/assets/f9428ea2-e912-4fc3-9ac3-0406141b1e4c)
+
+![statChart](https://github.com/user-attachments/assets/13e38238-8359-4e84-983e-a067f9e35956)
+
+![googleTrendsSearchCount](https://github.com/user-attachments/assets/ceea6b51-d1a5-43e8-bfb5-b55c1f76f8cc)
+
+![relative](https://github.com/user-attachments/assets/7e8a5943-121d-4c5d-8d28-84c3e621092b)
+
+![captionGenerate](https://github.com/user-attachments/assets/d6475b77-bd27-4760-b695-ba0a80627a85)
+
+![imageVariation](https://github.com/user-attachments/assets/b09cfc9f-fdc0-4cd0-9c0b-bab0943ca63f)
+
 **3. 개발 레퍼런스**
 
 https://htrend-4d67e.web.app/
@@ -615,8 +1050,8 @@ https://kr.noxinfluencer.com/
 
 **팀 기여도**
 
-| 김정훈 |  6   |
+| 김정훈 |  7   |
 | :----: | :--: |
 | 노태원 |  2   |
-| 이연준 |  2   |
+| 이연준 |  1   |
 
