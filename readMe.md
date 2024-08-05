@@ -734,7 +734,7 @@ print("\n".join(transcripts))
 
 ```
 
-
+![speech2text](https://github.com/user-attachments/assets/4ed0f1fb-8177-42bd-a0e3-71e31f263d89)
 
 | Main Developer | 김정훈 |
 | :------------: | :----: |
@@ -776,6 +776,7 @@ def main():
 if __name__ == '__main__':
     main()
 ```
+![ocr](https://github.com/user-attachments/assets/054f71cd-baf9-4ff8-8357-2da39469ada3)
 
 | Main Developer | 김정훈 |
 | :------------: | :----: |
@@ -1046,7 +1047,11 @@ https://htrend-4d67e.web.app/
 
 https://kr.noxinfluencer.com/
 
+**4. 시현 영상**
+인플루언서 스탯분석에 관한 발표 영상
+https://www.youtube.com/watch?v=e9kM0qYI3K4&t
 
+이미지 캡션 모듈 연동 추가후 추가 발표 영상
 
 **팀 기여도**
 
