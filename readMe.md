@@ -1052,6 +1052,7 @@ https://kr.noxinfluencer.com/
 https://www.youtube.com/watch?v=e9kM0qYI3K4&t
 
 이미지 캡션 모듈 연동 추가후 추가 발표 영상
+https://www.youtube.com/watch?v=w0yP7oYiSQo
 
 **팀 기여도**
 
