@@ -3,7 +3,112 @@
 
 <head>
     <title>Video Stats and Comments</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}" />
+    <noscript>
+        <link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" />
+    </noscript>
     <style>
+        .image-container {
+            display: flex;
+            flex-direction: column;
+            /* 세로 방향으로 배치 */
+            justify-content: center;
+            /* 세로 가운데 정렬 */
+            align-items: center;
+            /* 가로 가운데 정렬 */
+            height: 100vh;
+            /* 화면 높이에 맞추기 (필요에 따라 조정) */
+            text-align: center;
+            /* 텍스트와 이미지 정렬을 가운데로 설정 */
+        }
+
+        .youtuber {
+            display: flex;
+            justify-content: center;
+            /* 내부 이미지 가로 정렬 */
+            margin: 10px;
+            /* youtuber 요소 간의 간격 조정 */
+        }
+
+        .youtuber img {
+            max-width: 100%;
+            /* 이미지의 너비를 컨테이너에 맞추기 */
+            height: auto;
+            /* 이미지의 높이는 자동으로 조정 */
+        }
+
+        .image-container a {
+            margin: 10px 0;
+            /* 이미지 간의 간격 조정 */
+        }
+
+        .image-container img {
+            max-width: 100%;
+            /* 이미지의 너비를 컨테이너에 맞추기 */
+            height: auto;
+            /* 이미지의 높이는 자동으로 조정 */
+        }
+
+        /* 기본 스타일링 */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            /* 가운데 정렬 */
+            margin-bottom: 20px;
+        }
+
+        .tabs button {
+            background-color: #f1f1f1;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 0 5px;
+            /* 버튼 사이의 간격 조정 */
+        }
+
+        .tabs button.active {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .nav {
+            text-align: center;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .button-container a {
+            display: block;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+        }
+
+        .button-container img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            /* 이미지를 동그랗게 만듭니다 */
+            object-fit: cover;
+            /* 이미지 비율 유지 */
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -54,133 +159,213 @@
     </script>
 </head>
 
-<body>
-    <h1>Video Stats</h1>
-    <!-- 선택 박스 -->
-    <form method="GET">
-        <label for="category">Choose a category:</label>
-        <select name="category" id="category" onchange="updateURLParameter('category', this.value)">
-            <option value="">Select a category</option>
-            <option value="VIDEO_Oking">오킹</option>
-            <option value="VIDEO_STYLE">깡 스타일리스트</option>
-            <option value="VIDEO_GAME">동수칸</option>
-            <option value="VIDEO_MUSIC">때잉 플레이리스트</option>
-            <option value="VIDEO_ISSUE">뻑가</option>
-        </select>
-        <input type="submit" value="Submit">
-    </form>
+<body class="is-preload">
+    <!-- Header -->
+    <section id="header">
+        <div class="inner">
+            <img src="{% static 'images/youtube.png' %}" alt="YouTube Logo">
+            <h1>Hi, I'm <strong>Influencer Stat Anaysis</strong> with <strong>multu modality Utility</strong><br />
+                Project Information GitHub <a href="https://github.com/thuygom/youtube_follow_support">Youtube
+                    Follow Support</a>.</h1>
+            <p>-SNS를 설명가능한 인공지능을 활용해 분석한 프로젝트-<br />
+                김정훈 노태원 이연준</p>
+            <ul class="actions special">
+                <li><a href="#one" class="button scrolly">Discover</a></li>
+            </ul>
+        </div>
+    </section>
+    <section id="nav">
+        <div class="nav">
+            <h1>Influencer List(Prototype)</h1>
+            <nav>
+                <div class="button-container">
+                    <!-- 버튼 클릭 시 쿼리 매개변수로 정보를 전달 -->
+                    <a href="{% url 'about' %}?youtuber_id=VIDEO_Oking"><img src="{% static 'images/button1.jpg' %}"
+                            alt="Youtuber 1"></a>
+                    <a href="{% url 'about' %}?youtuber_id=VIDEO_ISSUE"><img src="{% static 'images/button2.jpg' %}"
+                            alt="Youtuber 2"></a>
+                    <a href="{% url 'about' %}?youtuber_id=VIDEO_GAME"><img src="{% static 'images/button3.jpg' %}"
+                            alt="Youtuber 3"></a>
+                    <a href="{% url 'about' %}?youtuber_id=VIDEO_STYLE"><img src="{% static 'images/button4.jpg' %}"
+                            alt="Youtuber 4"></a>
+                    <a href="{% url 'about' %}?youtuber_id=VIDEO_MUSIC"><img src="{% static 'images/button5.jpg' %}"
+                            alt="Youtuber 5"></a>
+                </div>
+            </nav>
+        </div>
+    </section>
+    <br>
+    <hr>
+    <!-- 탭 메뉴 -->
+    <div class="tabs">
+        <button class="tab-button" data-tab="tab1">홍보효과 Top List</button>
+        <button class="tab-button" data-tab="tab2">나락랭킹 Top List</button>
+    </div>
+    <br><br><br>
 
-    <!-- 선택된 카테고리의 VideoStat 정보 출력 -->
-    <h2>Selected Youtuber</h2>
-    {% if selected_category %}
-    <table>
-        <thead>
-            <tr>
-                <th>Video ID</th>
-                <th>Upload Date</th>
-                <th>Date</th>
-                <th>View Count</th>
-                <th>Like Count</th>
-                <th>Comment Count</th>
-                <th>Subscriber Count</th>
-                <th>Channel ID</th>
-                <th>Channel Title</th>
-                <th>Channel Description</th>
-                <th>Topic Categories</th>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Tags</th>
-                <th>Thumbnails</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for v in videos_selected %}
-            <tr>
-                <td>{{ v.video_id }}</td>
-                <td>{{ v.upload_date }}</td>
-                <td>{{ v.date }}</td>
-                <td>{{ v.view_count }}</td>
-                <td>{{ v.like_count }}</td>
-                <td>{{ v.comment_count }}</td>
-                <td>{{ v.subscriber_count }}</td>
-                <td>{{ v.channel_id }}</td>
-                <td>{{ v.channel_title }}</td>
-                <td>{{ v.channel_description }}</td>
-                <td>{{ v.topic_categories }}</td>
-                <td>{{ v.title }}</td>
-                <td>{{ v.description }}</td>
-                <td>{{ v.tags }}</td>
-                <td>{{ v.thumbnails }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
+    <!-- 탭 내용 -->
+    <div id="tab1" class="tab-content">
+        <div class="image-container">
+            <div class="youtuber">
+                <!-- 버튼 클릭 시 쿼리 매개변수로 정보를 전달 -->
+                <a href="{% url 'about' %}?youtuber_id=VIDEO_ISSUE"><img src="{% static 'images/button2.jpg' %}"
+                        alt="Youtuber 2"></a><br>
+                <ul>
+                    <li>Follow Support : 91.4</li>
+                    <li>평균 조회수 : 903045</li>
+                    <li>구독자 성장률 : -0.8%</li>
+                </ul>
+            </div>
+            <div class="youtuber">
+                <a href="{% url 'about' %}?youtuber_id=VIDEO_GAME"><img src="{% static 'images/button3.jpg' %}"
+                        alt="Youtuber 3"></a><br>
+                <ul>
+                    <li>Follow Support : 84.8</li>
+                    <li>평균 조회수 : 269715</li>
+                    <li>구독자 성장률 : 0.9%</li>
+                </ul>
+            </div>
+            <div class="youtuber">
+                <a href="{% url 'about' %}?youtuber_id=VIDEO_MUSIC"><img src="{% static 'images/button5.jpg' %}"
+                        alt="Youtuber 5"></a><br>
+                <ul>
+                    <li>Follow Support : 60.6</li>
+                    <li>평균 조회수 : 208016</li>
+                    <li>구독자 성장률 : 0%</li>
+                </ul>
+            </div>
+            <div class="youtuber">
+                <a href="{% url 'about' %}?youtuber_id=VIDEO_STYLE"><img src="{% static 'images/button4.jpg' %}"
+                        alt="Youtuber 4"></a><br>
+                <ul>
+                    <li>Follow Support : 64.2</li>
+                    <li>평균 조회수 : 81279</li>
+                    <li>구독자 성장률 : -0.8%</li>
+                </ul>
+            </div>
+            <div class="youtuber">
+                <a href="{% url 'about' %}?youtuber_id=VIDEO_Oking"><img src="{% static 'images/button1.jpg' %}"
+                        alt="Youtuber 1"></a><br>
+                <ul>
+                    <li>Follow Support : 30.6</li>
+                    <li>평균 조회수 : 2857768</li>
+                    <li>구독자 성장률 : -0.7%</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="tab2" class="tab-content">
+        <div class="image-container">
+            <div class="youtuber">
+                <!-- 버튼 클릭 시 쿼리 매개변수로 정보를 전달 -->
+                <a href="{% url 'about' %}?youtuber_id=VIDEO_Oking"><img src="{% static 'images/button1.jpg' %}"
+                        alt="Youtuber 1"></a><br>
+                <ul>
+                    <li>가장 많이 느낀 감정 : 분노</li>
+                    <li>구독자 성장률 : -0.7%</li>
+                    <li>Follow Support : 30.6</li>
+                </ul>
+            </div>
+            <div class="youtuber">
+                <a href="{% url 'about' %}?youtuber_id=VIDEO_ISSUE"><img src="{% static 'images/button2.jpg' %}"
+                        alt="Youtuber 2"></a><br>
+                <ul>
+                    <li>가장 많이 느낀 감정 : 분노</li>
+                    <li>구독자 성장률 : -0.8%</li>
+                    <li>Follow Support : 91.4</li>
+                </ul>
+            </div>
+            <div class="youtuber">
+                <a href="{% url 'about' %}?youtuber_id=VIDEO_STYLE"><img src="{% static 'images/button4.jpg' %}"
+                        alt="Youtuber 4"></a><br>
+                <ul>
+                    <li>가장 많이 느낀 감정 : 행복</li>
+                    <li>구독자 성장률 : -0.8%</li>
+                    <li>Follow Support : 64.2</li>
+                </ul>
+            </div>
+            <div class="youtuber">
+                <a href="{% url 'about' %}?youtuber_id=VIDEO_MUSIC"><img src="{% static 'images/button5.jpg' %}"
+                        alt="Youtuber 5"></a><br>
+                <ul>
+                    <li>가장 많이 느낀 감정 : 행복</li>
+                    <li>구독자 성장률 : 0%</li>
+                    <li>Follow Support : 60.6</li>
+                </ul>
+            </div>
+            <div class="youtuber">
+                <a href="{% url 'about' %}?youtuber_id=VIDEO_GAME"><img src="{% static 'images/button3.jpg' %}"
+                        alt="Youtuber 3"></a><br>
+                <ul>
+                    <li>가장 많이 느낀 감정 : 웃김</li>
+                    <li>구독자 성장률 : 0.9%</li>
+                    <li>Follow Support : 84.8</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <br>
+    <hr><br>
+    <div class="image-container">
+        <a href="{% url 'contact' %}">
+            <h1>Image Multi modality</h1>
+        </a>
+    </div>
 
-    <!-- 비디오 선택 폼 -->
-    <form>
-        <label for="video_id">Choose a video:</label><br>
-        {% for video in videos_selected %}
-        <input type="radio" id="{{ video.video_id }}" name="video_id" value="{{ video.video_id }}"
-            onclick="showComments()">
-        <label for="{{ video.video_id }}">{{ video.title }}</label><br>
-        {% endfor %}
-    </form>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
 
-    {% if selected_category %}
-    <table>
-        <thead>
-            <tr>
-                <th>Author</th>
-                <th>Date</th>
-                <th>Number of Likes</th>
-                <th>Emotion</th>
-                <th>Object</th>
-                <th>Comment</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for c in Comment_data %}
-            <!-- 출력할 내용 -->
-            <tr>
-                <td>{{ c.author }}</td>
-                <td>{{ c.date }}</td>
-                <td>{{ c.num_likes }}</td>
-                <td>{{ c.emotion }}</td>
-                <td>{{ c.object }}</td>
-                <td>{{ c.comment }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
 
+                    // 모든 버튼에서 active 클래스 제거
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
 
+                    // 모든 탭 내용 숨기기
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // 클릭된 버튼에 active 클래스 추가
+                    button.classList.add('active');
+
+                    // 클릭된 탭의 내용을 표시
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // 기본으로 첫 번째 탭을 활성화
+            if (tabButtons.length > 0) {
+                tabButtons[0].click(); // 첫 번째 버튼 클릭으로 기본 활성화
+            }
+        });
+    </script>
     <hr>
 
-    <h1>Video Stats and Comments</h1>
-
-    <!-- All Videos 섹션 -->
-    <details>
-        <summary>All Videos</summary>
-        <ul>
-            {% for v in VideoStat_data %}
-            <li>{{ v.title }} ({{ v.view_count }} views, {{ v.like_count }} likes)</li>
-            {% endfor %}
+    <!-- Footer -->
+    <section id="footer">
+        <ul class="icons">
+            <li><a href="#" class="icon brands alt fa-twitter"><span class="label">Twitter</span></a></li>
+            <li><a href="#" class="icon brands alt fa-facebook-f"><span class="label">Facebook</span></a></li>
+            <li><a href="#" class="icon brands alt fa-instagram"><span class="label">Instagram</span></a></li>
+            <li><a href="#" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+            <li><a href="#" class="icon solid alt fa-envelope"><span class="label">Email</span></a></li>
         </ul>
-    </details>
-
-    <hr>
-
-    <!-- 전체 Comment 정보 출력 -->
-    <details>
-        <summary>Comments</summary>
-        <ul>
-            {% for c in Comment_data %}
-            <li>{{ c.comment }} by {{ c.author }} ({{ c.num_likes }} likes, {{ c.date }})</li>
-            {% endfor %}
+        <ul class="copyright">
+            <li>&copy; Untitled</li>
+            <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
         </ul>
-    </details>
+    </section>
+
+    <!-- Scripts -->
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/jquery.scrolly.min.js' %}"></script>
+    <script src="{% static 'assets/js/browser.min.js' %}"></script>
+    <script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+    <script src="{% static 'assets/js/util.js' %}"></script>
+    <script src="{% static 'assets/js/main.js' %}"></script>
+
 </body>
 
 </html>

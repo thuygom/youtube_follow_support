@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Influencer Stat</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}" />
+    <noscript>
+        <link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" />
+    </noscript>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .rounded-image {
+            border-radius: 50%;
+            /* 이미지를 동그랗게 만듭니다 */
+            object-fit: cover;
+            /* 이미지 비율 유지 */
+        }
+
+        /* 기본 테이블 스타일 */
+        table {
+            border: 1px solid #f3e780;
+            width: 100%;
+            border-collapse: collapse;
+            /* 셀 간 경계선 접기 */
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        /* Indicator에 따른 배경색 */
+        .positive {
+            background-color: #76a8ca;
+            /* 연두색 */
+        }
+
+        .negative {
+            background-color: #d49499;
+            /* 핑크색 */
+        }
+
+        .neutral {
+            background-color: #e2e3e5;
+            /* 회색 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .dashboard {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        .box {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            width: 200px;
+            margin: 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .box:hover {
+            background-color: #f0f0f0;
+        }
+
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            margin: 20px 0;
+        }
+
+
+        img {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        p {
+            text-align: center;
+            font-size: 18px;
+            color: #555;
+        }
+
+
+
+        .chart-container {
+            display: none;
+            /* 기본적으로 차트를 숨김 */
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body class="is-preload">
+    <a href="{% url 'home' %}">Home</a>
+
+    <!-- Header -->
+    <section id="header">
+        <div class="inner">
+            <img src="{% static 'images/youtube.png' %}" alt="YouTube Logo">
+            <h1>Hi, I'm <strong>Influencer Stat Anaysis</strong> with <strong>multu modality Utility</strong><br />
+                Project Information GitHub <a href="https://github.com/thuygom/youtube_follow_support">Youtube
+                    Follow Support</a>.</h1>
+            <p>-SNS를 설명가능한 인공지능을 활용해 분석한 프로젝트-<br />
+                김정훈 노태원 이연준</p>
+        </div>
+    </section>
+
+    <body>
+        <section>
+            <h2>Upload Image</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" name="upload">Upload</button>
+            </form>
+
+            {% if uploaded_image_url %}
+            <h3>Uploaded Image:</h3>
+            <img src="{{ uploaded_image_url }}" alt="Uploaded Image">
+            {% endif %}
+
+            <h2>Run Caption Generate</h2>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" name="caption">image Caption Generate</button>
+            </form>
+
+            {% if caption %}
+            <h3>Function Result:</h3>
+            <p>{{ caption }}</p>
+            {% endif %}
+
+            <h2>Run Image Variation</h2>
+            <form method="post">
+                {% csrf_token %}
+                <input type="text" name="prompt" placeholder="{{caption}}" required>
+                <button type="submit" name="variation">Edge To Image</button>
+            </form>
+
+            <form method="post">
+                {% csrf_token %}
+                <input type="text" name="prompt" placeholder="{{caption}}" required>
+                <button type="submit" name="generate">sketch to Image</button>
+            </form>
+
+        </section>
+    </body>
+
+    <!-- Footer -->
+    <section id="footer">
+        <ul class="icons">
+            <li><a href="#" class="icon brands alt fa-twitter"><span class="label">Twitter</span></a></li>
+            <li><a href="#" class="icon brands alt fa-facebook-f"><span class="label">Facebook</span></a></li>
+            <li><a href="#" class="icon brands alt fa-instagram"><span class="label">Instagram</span></a></li>
+            <li><a href="#" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+            <li><a href="#" class="icon solid alt fa-envelope"><span class="label">Email</span></a></li>
+        </ul>
+        <ul class="copyright">
+            <li>&copy; Untitled</li>
+            <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+        </ul>
+    </section>
+
+    <!-- Scripts -->
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/jquery.scrolly.min.js' %}"></script>
+    <script src="{% static 'assets/js/browser.min.js' %}"></script>
+    <script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+    <script src="{% static 'assets/js/util.js' %}"></script>
+    <script src="{% static 'assets/js/main.js' %}"></script>
+
+</body>
+
+</html>

@@ -120,7 +120,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / "media"
+
 STATIC_URL = "static/"
+
+# STATICFILES_DIRS에 정적 파일의 위치를 추가합니다.
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+# 배포 환경에서는 아래와 같이 설정할 수 있습니다.
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
